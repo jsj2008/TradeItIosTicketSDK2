@@ -163,7 +163,7 @@ import PromiseKit
             _ submitAnswer: @escaping (String) -> Void,
             _ onCancelSecurityQuestion: @escaping () -> Void
         ) -> Void,
-        onFailure: @escaping (TradeItErrorResult, TradeItLinkedBroker) -> Void = {_ in },
+        onFailure: @escaping (TradeItErrorResult, TradeItLinkedBroker) -> Void = {_,_  in },
         onFinished: @escaping () -> Void
     ) {
         let promises = self.getAllDisplayableLinkedBrokers().map { linkedBroker in

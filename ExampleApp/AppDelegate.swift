@@ -106,20 +106,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         )
     }
 
-    func onAlertShownNotification(notification: Notification) {
+    @objc func onAlertShownNotification(notification: Notification) {
         let view = notification.userInfo?[TradeItNotification.UserInfoKey.view] ?? "NO KEY FOR VIEW"
         let alertTitle = notification.userInfo?[TradeItNotification.UserInfoKey.alertTitle] ?? "NO KEY FOR ALERT TITLE"
         let alertMessage = notification.userInfo?[TradeItNotification.UserInfoKey.alertMessage] ?? "NO KEY FOR ALERT MESSAGE"
         print("=====> ALERT SHOWN: VIEW: \(view), TITLE: \(alertTitle), MESSAGE: \(alertMessage)")
     }
 
-    func onViewDidAppearNotification(notification: Notification) {
+    @objc func onViewDidAppearNotification(notification: Notification) {
         let view = notification.userInfo?[TradeItNotification.UserInfoKey.view] ?? "NO KEY FOR VIEW"
         let viewTitle = notification.userInfo?[TradeItNotification.UserInfoKey.viewTitle] ?? "NO KEY FOR VIEW TITLE"
         print("=====> VIEW APPEARED: \(view), TITLE: \(viewTitle)")
     }
 
-    func didLink(notification: Notification) {
+    @objc func didLink(notification: Notification) {
         print("TradeItSDK: didLink notification")
         guard let linkedBroker = notification.userInfo?["linkedBroker"] as? TradeItLinkedBroker else {
             return print("No linkedBroker passed with notification")
@@ -127,7 +127,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print(linkedBroker.brokerName)
     }
 
-    func didUnlink(notification: Notification) {
+    @objc func didUnlink(notification: Notification) {
         print("TradeItSDK: didUnlink notification")
         guard let linkedBroker = notification.userInfo?["linkedBroker"] as? TradeItLinkedBroker else {
             return print("No linkedBroker passed with notification")
@@ -135,7 +135,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print(linkedBroker.brokerName)
     }
 
-    func onButtonTappedNotification(notification: Notification) {
+    @objc func onButtonTappedNotification(notification: Notification) {
         let view = notification.userInfo?[TradeItNotification.UserInfoKey.view] ?? "NO KEY FOR VIEW"
         let button = notification.userInfo?[TradeItNotification.UserInfoKey.button] ?? "NO KEY FOR BUTTON"
         print("=====> BUTTON TAPPED: VIEW: \(view), BUTTON: \(button)")
@@ -209,9 +209,9 @@ class DummyMarketDataService: MarketDataService {
         // Get market data and populate TradeItQuote
         let quote = TradeItQuote()
         quote.companyName = "LOL"
-        quote.lastPrice = 1337.42
-        quote.change = 42.1337
-        quote.pctChange = -123.456
+        quote.lastPrice = 1337.42 as NSNumber & Optional
+        quote.change = 42.1337 as NSNumber & Optional
+        quote.pctChange = -123.456 as NSNumber & Optional
         quote.dateTime = "12:34:56"
         onSuccess(quote)
 

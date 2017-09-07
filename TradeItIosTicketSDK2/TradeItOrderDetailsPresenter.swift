@@ -46,7 +46,7 @@ class TradeItOrderPriceTypePresenter {
     }
 }
 
-class TradeItOrderActionPresenter {
+public class TradeItOrderActionPresenter {
     static let DEFAULT: TradeItOrderAction = .buy
     static let ACTIONS: [TradeItOrderAction] = [.buy, .sell, .buyToCover, .sellShort]
     static let SELL_ACTIONS: [TradeItOrderAction] = [.sell, .sellShort]

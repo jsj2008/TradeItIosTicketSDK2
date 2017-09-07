@@ -149,7 +149,7 @@ import PromiseKit
         let promises = accounts.filter { account in
             return force || (account.balance == nil && account.fxBalance == nil)
         }.map { account in
-            return Promise<Void> { fulfill, reject in
+            return Promise<> { fulfill, reject in
                 account.getAccountOverview(
                     cacheResult: false, // Cache at the end so we don't cache the entire linked broker multiple times
                     onSuccess: { _ in

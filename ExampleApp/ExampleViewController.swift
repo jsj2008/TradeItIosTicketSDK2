@@ -695,7 +695,7 @@ class ExampleViewController: UIViewController, UITableViewDataSource, UITableVie
                     brokersUnlinked += 1
                 },
                 onFailure: { errorResult in
-                    print("=====> Error unlinking broker(\(linkedBroker.userId)): \(errorResult.code ?? 0), \(errorResult.shortMessage ?? ""), \(errorResult.longMessages?.first ?? "")")
+                    print("=====> Error unlinking broker(\(linkedBroker.userId)): \(errorResult.code ?? 0 as NSNumber & Optional), \(errorResult.shortMessage ?? ""), \(errorResult.longMessages?.first ?? "")")
                 }
             )
         }
