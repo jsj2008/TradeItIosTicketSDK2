@@ -41,14 +41,23 @@ class TradeItOrdersTableViewManager: NSObject, UITableViewDelegate, UITableViewD
     }
     
     func updateOrders(_ orders: [TradeItOrderStatusDetails]) {
+        self.orderSectionPresenters = []
+        
+        self.orderSectionPresenters.append(OrderSectionPresenter(orders: [], title: "Open Orders (Past 60 Days)"))
         let openOrders = orders.filter { ["PENDING", "OPEN", "PART_FILLED", "PENDING_CANCEL"].contains($0.orderStatus ?? "") }
+        let splitedOpenOrdersArray = getSplittedOrdersArray(orders: openOrders)
+        buildOrderSectionPresentersFrom(splitedOrdersArray: splitedOpenOrdersArray)
+        
+        self.orderSectionPresenters.append(OrderSectionPresenter(orders: [], title: "Filled Orders (Today)"))
         let filledOrders = orders.filter { ["FILLED"].contains($0.orderStatus ?? "") }
+        let splitedFilledOrdersArray = getSplittedOrdersArray(orders: filledOrders)
+        buildOrderSectionPresentersFrom(splitedOrdersArray: splitedFilledOrdersArray)
+        
+        self.orderSectionPresenters.append(OrderSectionPresenter(orders: [], title: "Other Orders (Today)"))
         let otherOrders = orders.filter { ["CANCELED", "REJECTED", "NOT_FOUND", "EXPIRED"].contains($0.orderStatus ?? "") }
-        self.orderSectionPresenters = [
-            OrderSectionPresenter(orders: openOrders),
-            OrderSectionPresenter(orders: filledOrders),
-            OrderSectionPresenter(orders: otherOrders)
-        ]
+        let splitedOtherOrdersArray = getSplittedOrdersArray(orders: otherOrders)
+        buildOrderSectionPresentersFrom(splitedOrdersArray: splitedOtherOrdersArray)
+        
         self.ordersTable?.reloadData()
     }
     
@@ -58,16 +67,7 @@ class TradeItOrdersTableViewManager: NSObject, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case TradeItOrdersTableViewManager.OPEN_ORDERS_SECTION:
-            return "Open Orders (Past 60 Days)"
-        case TradeItOrdersTableViewManager.FILLED_ORDERS_SECTION:
-            return "Filled Orders (Today)"
-        case TradeItOrdersTableViewManager.OTHER_ORDERS_SECTION:
-            return "Other Orders (Today)"
-        default:
-            return "Unknown"
-        }
+        return self.orderSectionPresenters[section].title
     }
     
     // MARK: UITableViewDataSource
@@ -98,7 +98,7 @@ class TradeItOrdersTableViewManager: NSObject, UITableViewDelegate, UITableViewD
     
     // MARK: Private
     
-    func addRefreshControl(toTableView tableView: UITableView) {
+    private func addRefreshControl(toTableView tableView: UITableView) {
         let refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "Refreshing...")
         refreshControl.addTarget(
@@ -110,14 +110,52 @@ class TradeItOrdersTableViewManager: NSObject, UITableViewDelegate, UITableViewD
         tableView.addSubview(refreshControl)
         self.refreshControl = refreshControl
     }
+    
+    /**
+     * This is to split orders in order to have a specific section for group orders
+    **/
+    private func getSplittedOrdersArray(orders: [TradeItOrderStatusDetails]) -> [[TradeItOrderStatusDetails]]{
+        return orders.reduce([[]], { splittedArrays, order in
+            var splittedArraysTmp = splittedArrays
+            let lastResult: [TradeItOrderStatusDetails] = splittedArrays[(splittedArrays.endIndex - 1)]
+            
+            let groupOrderType = order.groupOrderType ?? ""
+            
+            if groupOrderType.isEmpty && !lastResult.contains(order) { // this is not a group order, we can append the order
+                splittedArraysTmp[(splittedArraysTmp.endIndex - 1)].append(order)
+                return splittedArraysTmp
+            } else { // This is a group order or the begining of a new array
+                splittedArraysTmp.append([order])
+                return splittedArraysTmp
+            }
+        })
+    }
+    
+    private func buildOrderSectionPresentersFrom(splitedOrdersArray: [[TradeItOrderStatusDetails]]) {
+        splitedOrdersArray.forEach { splittedOrders in
+            var title = ""
+            if let groupOrder = (splittedOrders.filter { $0.groupOrderType != "" && $0.groupOrderType != nil }).first
+                , let groupOrderType = groupOrder.groupOrderType {
+                title = groupOrderType.lowercased().capitalized.replacingOccurrences(of: "_", with: " ")
+            }
+            self.orderSectionPresenters.append(
+                OrderSectionPresenter(
+                    orders: splittedOrders,
+                    title: title
+                )
+            )
+        }
+    }
 
 }
 
 fileprivate class OrderSectionPresenter {
     let orders: [TradeItOrderStatusDetails]
+    let title: String
     
-    init(orders: [TradeItOrderStatusDetails]) {
+    init(orders: [TradeItOrderStatusDetails], title: String) {
         self.orders = orders
+        self.title = title
     }
     
     func numberOfRows() -> Int {
